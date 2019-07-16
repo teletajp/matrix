@@ -1,0 +1,23 @@
+dist: xenial
+language: cpp
+compiler: clang
+addons:
+  apt:
+    sources:
+    - llvm-toolchain-xenial-7
+    packages:
+    - libc++-7-dev
+    - libc++abi-7-dev
+    update: true
+script:
+- mkdir build
+- cd build
+- CXXFLAGS="-std=c++17" cmake ..
+- cmake --build .
+- cmake --build . --target package
+deploy:
+  provider: script
+  skip_cleanup: true
+  script:
+  - curl -T matrix-0.0.$TRAVIS_BUILD_NUMBER-Linux.deb -u teletajp:$BINTRAY_API_KEY "https://api.bintray.com/content/teletajp/otus-cpp/homework/$TRAVIS_BUILD_NUMBER/matrix-0.0.$TRAVIS_BUILD_NUMBER-Linux.deb;deb_distribution=xenial;deb_component=main;deb_architecture=amd64;publish=1"
+  

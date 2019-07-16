@@ -1,0 +1,8 @@
+#include <iostream>
+#include "version.h"
+
+int main(int argc, char const *argv[])
+{
+    
+    return 0;
+}
