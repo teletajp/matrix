@@ -2,55 +2,58 @@
 #include <map>
 #include <limits>
 
-template<class T, T empty_value>
-class InfinityArray
+template<class T, T ZERO_VAL>
+class Matrix
 {
 private:
-    const T empty_value_ = empty_value;
-    using ValArray = std::map<std::size_t, T>;
-    ValArray values_;
-public:
-    InfinityArray(/* args */);
-    ~InfinityArray();
-    T& operator[](std::size_t idx)
-    {
-        auto it = values_.find(idx);
-        if(it != values_.end()) return it->second;
-        return values_[indx] = empty_value_;
-    }
-    T operator[](std::size_t idx)
-    {
-        auto it = values_.find(idx);
-        if(it != values_.end()) return it->second;
-        return empty_value_;
-    }
-};
+    struct Cell;
+    using column_t = std::map<uint64_t, Cell>;
+    using column_ptr_t = column_t*;
 
-template<class T, T empty_value>
-class matrix
-{
-public:
-    using std::tuple<std::size_t, std::size_t, T> cell_t;
-    using std::map<std::size_t, cell_t> row_t;
-    struct row
+    struct Cell
     {
-        row_t cells_;
-        cell_t& operator[](std::size_t col_idx)
-    }
-private:
-    
-    
-    using std::map<std::size_t, row_t> table_t;
+        uint64_t x_;
+        uint64_t y_;
+        T value_;
+        column_ptr_t p_column_;
 
-    std::size_t size_;
-    table_t table_;
-public:
-    matrix(/* args */) = default;
-    ~matrix() = default;
-    T& operator[](std::size_t col_idx)
+        Cell(uint64_t x, uint64_t y):x_(x), y_(y), value_(ZERO_VAL){};
+
+        Cell& operator=(const T& value)
+        {
+            value_ = value;
+            if(value_ == ZERO_VAL)
+            {
+                auto p_column = p_column_;
+                p_column->erase(y_);
+                if(p_column->empty())
+                    p_column->p_matrix_->erase(x_);
+            }
+        }
+    };
+    struct Column;
+    using matrix_t = std::map<uint64_t, Column>;
+    using matrix_ptr_t = matrix_t*;
+    
+    struct Column
     {
-        return *(table_.emplace({col_idx, row_t()}).first);
+        const uint64_t x_;
+        matrix_ptr_t p_matrix_;
+        column_t column_;
+        Cell& operator[](const uint64_t y)
+        {
+            return *(column_.emplace({y, Cell(x_,y)}).first);
+        }
+        Column(uint64_t x, matrix_ptr_t p_matrix):x_(x),p_matrix_(p_matrix){};
     };
 
+    matrix_t matrix_; 
+public:
+    Matrix(/* args */){};
+    ~Matrix(){};
+    Column& operator[](uint64_t x)
+    {
+        return matrix_.insert(std::make_pair(x, Column(x, &matrix_)).first.second;
+    }
 };
 

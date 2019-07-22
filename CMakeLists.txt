@@ -21,6 +21,7 @@ target_sources(${PROJECT_NAME}
 PRIVATE
     src/main.cpp
     src/version.h
+    src/matrix.h
 )
 
 
