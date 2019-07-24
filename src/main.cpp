@@ -19,7 +19,6 @@ void test()
     assert(a == -1);
     assert(matrix.size() == 0);
     matrix[100][100] = 314;
-    matrix[1000][1000] = 315;
     assert(matrix[100][100] == 314);
     assert(matrix.size() == 2);
     for (auto c : matrix)

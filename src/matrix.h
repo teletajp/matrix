@@ -16,16 +16,32 @@ private:
         uint64_t x_;
         uint64_t y_;
         T value_;
-        uint64_t *matrix_size_;
-        Cell(uint64_t x, uint64_t y, uint64_t *matrix_size):x_(x), y_(y), value_(ZERO_VAL), matrix_size_(matrix_size){};
+        matrix_t* p_matrix_;
+        uint64_t* p_matix_size_;
+        Cell(uint64_t x, uint64_t y, matrix_t* p_matrix, uint64_t* p_matix_size): x_(x), y_(y), value_(ZERO_VAL), p_matrix_(p_matrix), p_matix_size_(p_matix_size){};
+        Cell& operator=(const Cell& cell) = default;
 
         Cell& operator=(const T& value)
         {
             if (value_ == ZERO_VAL && value != ZERO_VAL)
-                if(matrix_size_)(*matrix_size_)++;
-            else if(value_ != ZERO_VAL && value == ZERO_VAL)
-                    if (matrix_size_)(*matrix_size_)--;
-            value_ = value;
+            {//fake_value
+                Column &col = p_matrix_->emplace(std::make_pair(x_, Column(x_, p_matrix_, p_matix_size_))).first->second;
+                Cell& cell = col.column_.emplace(std::make_pair(y_, Cell(x_, y_, p_matrix_, p_matix_size_))).first->second;
+                cell = *this;
+                cell.value_ = value;
+                (*p_matix_size_)++;
+                return cell;
+            }
+            else if (value_ != ZERO_VAL && value == ZERO_VAL)
+            {
+                Cell temp = *this;
+                column_t *p_column = &temp.p_matrix_->at(temp.x_).column_;
+                p_column->erase(temp.y_);
+                if (p_column->empty())
+                    temp.p_matrix_->erase(temp.x_);
+                (*temp.p_matix_size_)--;
+                temp.value_ = ZERO_VAL;
+            }
             return *this;
         }
         template<class U>
@@ -43,28 +59,43 @@ private:
 
     struct Column
     {
-        Cell zero_cell;
-        const uint64_t x_;
+        uint64_t x_;
+        matrix_t* p_matrix_;
         column_t column_;
-        uint64_t *matrix_size_;
+        uint64_t* p_matix_size_;
+        Cell fake_cell;
         Cell& operator[](uint64_t y)
         {
-            return column_.insert(std::make_pair(y, Cell(x_,y, matrix_size_))).first->second;
+            auto find_it = column_.find(y);
+            if (find_it == column_.end())
+            {
+                fake_cell.x_ = x_;
+                fake_cell.y_ = y;
+                return fake_cell;
+            }
+            return column_.at(y);
         }
 
-        Column(uint64_t x, uint64_t *matrix_size):zero_cell(0, 0, nullptr), x_(x), matrix_size_(matrix_size){};
+        Column(uint64_t x, matrix_t* p_matrix, uint64_t* p_matix_size): x_(x), p_matrix_(p_matrix), p_matix_size_(p_matix_size), fake_cell(x_,0,p_matrix_, p_matix_size_){};
         typename column_t::iterator begin() { return column_.begin(); }
         typename column_t::iterator end() { return column_.end(); }
     };
 
     matrix_t matrix_; 
     uint64_t size_;
+    Column fake_column_;
 public:
-    Matrix():size_(0){};
+    Matrix() : matrix_(), size_(0), fake_column_(0, &matrix_, &size_) {};
     ~Matrix(){};
     Column& operator[](uint64_t x)
     {
-        return matrix_.insert(std::make_pair(x, Column(x, &size_))).first->second;
+        auto find_it = matrix_.find(x);
+        if (find_it == matrix_.end())
+        {
+            fake_column_.x_ = x;
+            return fake_column_;
+        }
+        return matrix_.at(x);
     };
 
     uint64_t size() { return size_; };
