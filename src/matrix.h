@@ -22,9 +22,9 @@ private:
         Cell& operator=(const T& value)
         {
             if (value_ == ZERO_VAL && value != ZERO_VAL)
-                (*matrix_size_)++;
+                if(matrix_size_)(*matrix_size_)++;
             else if(value_ != ZERO_VAL && value == ZERO_VAL)
-                (*matrix_size_)--;
+                    if (matrix_size_)(*matrix_size_)--;
             value_ = value;
             return *this;
         }
@@ -43,6 +43,7 @@ private:
 
     struct Column
     {
+        Cell zero_cell;
         const uint64_t x_;
         column_t column_;
         uint64_t *matrix_size_;
@@ -50,7 +51,8 @@ private:
         {
             return column_.insert(std::make_pair(y, Cell(x_,y, matrix_size_))).first->second;
         }
-        Column(uint64_t x, uint64_t *matrix_size):x_(x), matrix_size_(matrix_size){};
+
+        Column(uint64_t x, uint64_t *matrix_size):zero_cell(0, 0, nullptr), x_(x), matrix_size_(matrix_size){};
         typename column_t::iterator begin() { return column_.begin(); }
         typename column_t::iterator end() { return column_.end(); }
     };
@@ -64,37 +66,56 @@ public:
     {
         return matrix_.insert(std::make_pair(x, Column(x, &size_))).first->second;
     };
+
     uint64_t size() { return size_; };
 
     class matrix_iterator
     {
         typename matrix_t::iterator mit_;
+        typename matrix_t::iterator end_;
         typename column_t::iterator cit_;
     public:
         matrix_iterator() = default;
-        matrix_iterator(typename matrix_t::iterator mit) :mit_(mit){};
+        matrix_iterator(typename matrix_t::iterator mit, typename matrix_t::iterator end):mit_(mit), end_(end)
+        {
+            cit_ = mit_ == end_ ? column_t().end() : mit_->second.begin();
+        };
         matrix_iterator(const matrix_iterator &rhs) :mit_(rhs.mit_), cit_(rhs.cit_){};
-        const matrix_iterator& operator=(const matrix_iterator& rhs) { mit_ = rhs.mit_; return *this; }
+        const matrix_iterator& operator=(const matrix_iterator& rhs) { mit_ = rhs.mit_; end_ = rhs.end_; cit_ = rhs.cit_; return *this; }
 
-        std::tuple<int&, int&,T&> operator*() { return  (std::tuple<int&, int&, T&>)cit_->second;}
-        Cell* operator->() { return cit->second; }
-        const bool operator!=(const matrix_iterator& rhs)const { return !(mit_ == rhs.mit_ && cit_ == rhs.cit_); }
+        std::tuple<int&, int&,T&> operator*() { return (std::tuple<int&, int&, T&>)cit_->second;}
+        Cell* operator->() { return cit_->second; }
+        const bool operator!=(const matrix_iterator& rhs)const 
+        { 
+            if(mit_ != end_)
+                return !(mit_ == rhs.mit_ && cit_ == rhs.cit_);
+            return mit_ != rhs.mit_;
+        }
         matrix_iterator& operator++()
         {
-            if (cit_ == mit_->second.end())
+            do
             {
-                mit_++;
-                cit_ = mit_->second.begin();
-            }
-            else
                 cit_++;
-            return *this; 
+                if (cit_ == mit_->second.end())
+                {
+                    mit_++;
+                    if (mit_ != end_)
+                        cit_ = mit_->second.begin();
+                    else
+                        break;
+                }
+            }
+            while (cit_->second.value_ == ZERO_VAL);
+            return *this;
         };
     };
 
     using iterator = matrix_iterator;
-    iterator begin() { return iterator(matrix_.begin()); }
-    iterator end() { return iterator(matrix_.end()); }
+    iterator begin()
+    {
+        return iterator(matrix_.begin(), matrix_.end());
+    }
+    iterator end() { return iterator(matrix_.end(), matrix_.end()); }
 
 };
 

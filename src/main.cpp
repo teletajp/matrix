@@ -6,13 +6,22 @@
 void test()
 {
     Matrix<int, -1> matrix; // бесконечная матрица int заполнена значениями -1
+    for (auto c : matrix)
+    {
+        int x;
+        int y;
+        int v;
+        std::tie(x, y, v) = c;
+        std::cout << x << y << v << std::endl;
+    }
     assert(matrix.size() == 0); // все ячейки свободны
     auto a = matrix[0][0];
     assert(a == -1);
     assert(matrix.size() == 0);
     matrix[100][100] = 314;
+    matrix[1000][1000] = 315;
     assert(matrix[100][100] == 314);
-    assert(matrix.size() == 1);
+    assert(matrix.size() == 2);
     for (auto c : matrix)
     {
         int x;
