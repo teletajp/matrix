@@ -33,7 +33,7 @@ void test()
 
 int main(int argc, char const *argv[])
 {
-    test();
+    //test();
     Matrix<int, 0> matrix;
     for (int i = 0; i < 10; i++)
     {
@@ -49,5 +49,14 @@ int main(int argc, char const *argv[])
     }
 
     std::cout << matrix.size() << std::endl;
+
+    for (auto c : matrix)
+    {
+        int x;
+        int y;
+        int v;
+        std::tie(x, y, v) = c;
+        std::cout << x << y << v << std::endl;
+    }
     return 0;
 }
