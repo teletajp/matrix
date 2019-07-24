@@ -20,7 +20,7 @@ void test()
     assert(matrix.size() == 0);
     matrix[100][100] = 314;
     assert(matrix[100][100] == 314);
-    assert(matrix.size() == 2);
+    assert(matrix.size() == 1);
     for (auto c : matrix)
     {
         int x;

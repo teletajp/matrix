@@ -15,6 +15,7 @@ script:
 - CXXFLAGS="-std=c++17" cmake ..
 - cmake --build .
 - cmake --build . --target package
+- ./matrix
 deploy:
   provider: script
   skip_cleanup: true

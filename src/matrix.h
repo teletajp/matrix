@@ -32,15 +32,23 @@ private:
                 (*p_matix_size_)++;
                 return cell;
             }
-            else if (value_ != ZERO_VAL && value == ZERO_VAL)
+            
+            if (value_ != ZERO_VAL)
             {
-                Cell temp = *this;
-                column_t *p_column = &temp.p_matrix_->at(temp.x_).column_;
-                p_column->erase(temp.y_);
-                if (p_column->empty())
-                    temp.p_matrix_->erase(temp.x_);
-                (*temp.p_matix_size_)--;
-                temp.value_ = ZERO_VAL;
+                if (value == ZERO_VAL)
+                {
+                    Cell temp = *this;
+                    column_t *p_column = &temp.p_matrix_->at(temp.x_).column_;
+                    p_column->erase(temp.y_);
+                    if (p_column->empty())
+                        temp.p_matrix_->erase(temp.x_);
+                    (*temp.p_matix_size_)--;
+                    temp.value_ = ZERO_VAL;
+                }
+                else
+                {
+                    value_ = value;
+                }
             }
             return *this;
         }
