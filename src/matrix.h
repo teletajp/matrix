@@ -149,4 +149,3 @@ public:
     iterator end() { return iterator(matrix_.end(), matrix_.end()); }
 
 };
-
