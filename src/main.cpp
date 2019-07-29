@@ -35,6 +35,7 @@ int main(int argc, char const *argv[])
 {
     //test();
     Matrix<int, 0> matrix;
+
     for (int i = 0; i < 10; i++)
     {
         matrix[i][i] = i;
