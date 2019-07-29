@@ -25,8 +25,8 @@ private:
         {
             if (value_ == ZERO_VAL && value != ZERO_VAL)
             {//fake_value
-                Column &col = p_matrix_->emplace(std::make_pair(x_, Column(x_, p_matrix_, p_matix_size_))).first->second;
-                Cell& cell = col.column_.emplace(std::make_pair(y_, Cell(x_, y_, p_matrix_, p_matix_size_))).first->second;
+                Column &col = p_matrix_->emplace(x_, Column(x_, p_matrix_, p_matix_size_)).first->second;
+                Cell& cell = col.column_.emplace(y_, Cell(x_, y_, p_matrix_, p_matix_size_)).first->second;
                 cell = *this;
                 cell.value_ = value;
                 (*p_matix_size_)++;
@@ -44,6 +44,7 @@ private:
                         temp.p_matrix_->erase(temp.x_);
                     (*temp.p_matix_size_)--;
                     temp.value_ = ZERO_VAL;
+                    return temp;
                 }
                 else
                 {
@@ -57,10 +58,10 @@ private:
         {
             return std::tie((U&)x_, (U&)y_, value_);
         }
-        template<class U>
-        operator U()
+
+        operator T() const
         {
-            return static_cast<U>(value_);
+            return value_;
         }
         bool operator== (const T& value) const { return value_ == value; };
     };
@@ -81,7 +82,7 @@ private:
                 fake_cell.y_ = y;
                 return fake_cell;
             }
-            return column_.at(y);
+            return find_it->second;
         }
 
         Column(uint64_t x, matrix_t* p_matrix, uint64_t* p_matix_size): x_(x), p_matrix_(p_matrix), p_matix_size_(p_matix_size), fake_cell(x_,0,p_matrix_, p_matix_size_){};
@@ -103,7 +104,7 @@ public:
             fake_column_.x_ = x;
             return fake_column_;
         }
-        return matrix_.at(x);
+        return find_it->second;
     };
 
     uint64_t size() { return size_; };
@@ -132,7 +133,7 @@ public:
         }
         matrix_iterator& operator++()
         {
-            do
+            if (mit_ != end_)
             {
                 cit_++;
                 if (cit_ == mit_->second.end())
@@ -140,13 +141,10 @@ public:
                     mit_++;
                     if (mit_ != end_)
                         cit_ = mit_->second.begin();
-                    else
-                        break;
                 }
             }
-            while (cit_->second.value_ == ZERO_VAL);
             return *this;
-        };
+        }
     };
 
     using iterator = matrix_iterator;

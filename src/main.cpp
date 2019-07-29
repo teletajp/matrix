@@ -44,7 +44,7 @@ int main(int argc, char const *argv[])
     for (int x = 1; x <= 8; x++)
     {
         for (int y = 1; y <= 8; y++)
-            std::cout << (int)matrix[x][y] << ' ';
+            std::cout << matrix[x][y] << ' ';
         std::cout << std::endl;
     }
 
